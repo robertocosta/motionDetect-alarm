@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # pip install opencv-python
 # no need of https://pypi.org/project/Pillow/5.4.1/
 # pip install pywin32 for emails
