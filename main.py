@@ -10,7 +10,7 @@ import winsound
 from time import sleep
 from threading import Thread
 
-initial_timeout = 5
+initial_timeout = 60
 alpha = 0.5
 T3 = 1000
 cam0 = cv2.VideoCapture(0)
