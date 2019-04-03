@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # pip install opencv-python
 # no need of https://pypi.org/project/Pillow/5.4.1/
 # pip install pywin32 for emails
@@ -11,16 +10,17 @@ import winsound
 from time import sleep
 from threading import Thread
 
-initial_timeout = 2
+initial_timeout = 5
 alpha = 0.5
 T3 = 1000
 cam0 = cv2.VideoCapture(0)
 time_between_captures = 200
-n_pixels_in_motion = 50
-timeout_sending = 10
-timeout_counter = 2
-n_attachments_per_mail = 3
-
+n_pixels_in_motion = 100
+timeout_sending = 20
+timeout_counter = 5
+n_min_min_attachments_per_mail = 3
+timeout_wait = 60
+nap_duration = 30
 
 def get_image(camera):
    # read is the easiest way to get a full image out of a VideoCapture object.7
@@ -84,6 +84,7 @@ if __name__ == "__main__":
    started_sending = False
    first_now_sending = dt.now()
    first_now_counter = dt.now()
+   first_now_wait = dt.now()
    attachments_name = []
    i=0
 
@@ -100,6 +101,11 @@ if __name__ == "__main__":
 
 
       if np.count_nonzero(motion) > n_pixels_in_motion:
+         time_delta_wait = dt.now() - first_now_wait
+         start_waiting =  time_delta_wait.total_seconds() > timeout_wait
+         if start_waiting:
+            sleep(nap_duration)
+            first_now_wait = dt.now()
          im_name = get_image_name(i)
          cv2.imwrite(im_name, img)
          print("movement " + im_name)
@@ -113,7 +119,7 @@ if __name__ == "__main__":
             first_now_counter = dt.now()
             beep(1,2)
 
-         if (start_sending and (i > n_attachments_per_mail)):
+         if (start_sending and (i >= n_min_attachments_per_mail)):
             first_now_sending = dt.now()
             print('sending email with attachments:')
             print(attachments_name)
