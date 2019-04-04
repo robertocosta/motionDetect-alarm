@@ -18,9 +18,9 @@ time_between_captures = 200
 n_pixels_in_motion = 100
 timeout_sending = 20
 timeout_counter = 5
-n_min_min_attachments_per_mail = 3
+n_min_attachments_per_mail = 3
 timeout_wait = 60
-nap_duration = 30
+nap_duration = 10
 
 def get_image(camera):
    # read is the easiest way to get a full image out of a VideoCapture object.7
@@ -30,7 +30,7 @@ def get_image(camera):
 
 def get_moment():
    return dt.now().strftime('%Y-%m-%d_%H-%S-%f')
-
+	
 
 def get_image_name(i):
    dir_path = os.getcwd() + '\snapshots'
@@ -119,7 +119,7 @@ if __name__ == "__main__":
             first_now_counter = dt.now()
             beep(1,2)
 
-         if (start_sending and (i >= n_min_attachments_per_mail)):
+         if start_sending and (i >= n_min_attachments_per_mail):
             first_now_sending = dt.now()
             print('sending email with attachments:')
             print(attachments_name)
