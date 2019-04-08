@@ -1,3 +1,4 @@
+#!/usr/bin/python3.5
 # pip install opencv-python
 # no need of https://pypi.org/project/Pillow/5.4.1/
 # pip install pywin32 for emails
@@ -20,7 +21,7 @@ timeout_sending = 20
 timeout_counter = 5
 n_min_attachments_per_mail = 3
 timeout_wait = 60
-nap_duration = 10
+nap_duration = 5
 
 def get_image(camera):
    # read is the easiest way to get a full image out of a VideoCapture object.7
@@ -29,7 +30,7 @@ def get_image(camera):
 
 
 def get_moment():
-   return dt.now().strftime('%Y-%m-%d_%H-%S-%f')
+   return dt.now().strftime('%Y-%m-%d_%H-%M-%S-%f')
 	
 
 def get_image_name(i):
@@ -89,47 +90,49 @@ if __name__ == "__main__":
    i=0
 
    while True:
-      img = get_image(cam0)
-      cv2.imshow('img', img)
-      cv2.waitKey(time_between_captures)
+      try:
+         img = get_image(cam0)
+         cv2.imshow('img', img)
+         cv2.waitKey(time_between_captures)
 
-      B = alpha * prev_input + (1 - alpha) * B
-      rho = img-B
-      motion = rho**2>T3
-      prev_input = img
+         B = alpha * prev_input + (1 - alpha) * B
+         rho = img-B
+         motion = rho**2>T3
+         prev_input = img
 
 
 
-      if np.count_nonzero(motion) > n_pixels_in_motion:
-         time_delta_wait = dt.now() - first_now_wait
-         start_waiting =  time_delta_wait.total_seconds() > timeout_wait
-         if start_waiting:
-            sleep(nap_duration)
-            first_now_wait = dt.now()
-         im_name = get_image_name(i)
-         cv2.imwrite(im_name, img)
-         print("movement " + im_name)
-         time_delta_sending = dt.now() - first_now_sending
-         time_delta_counter = dt.now() - first_now_counter
-         start_sending = time_delta_sending.total_seconds() > timeout_sending
-         reset_counter = time_delta_counter.total_seconds() > timeout_counter
-         if reset_counter:
-            i += 1
-            attachments_name.append(im_name)
-            first_now_counter = dt.now()
-            beep(1,2)
+         if np.count_nonzero(motion) > n_pixels_in_motion:
+            time_delta_wait = dt.now() - first_now_wait
+            start_waiting =  time_delta_wait.total_seconds() > timeout_wait
+            if start_waiting:
+               sleep(nap_duration)
+               first_now_wait = dt.now()
+            im_name = get_image_name(i)
+            cv2.imwrite(im_name, img)
+            print("movement " + im_name)
+            time_delta_sending = dt.now() - first_now_sending
+            time_delta_counter = dt.now() - first_now_counter
+            start_sending = time_delta_sending.total_seconds() > timeout_sending
+            reset_counter = time_delta_counter.total_seconds() > timeout_counter
+            if reset_counter:
+               i += 1
+               attachments_name.append(im_name)
+               first_now_counter = dt.now()
+               beep(1,2)
 
-         if start_sending and (i >= n_min_attachments_per_mail):
-            first_now_sending = dt.now()
-            print('sending email with attachments:')
-            print(attachments_name)
-            beep(2,1)
-            thread = Thread(target=send_mail, args=(attachments_name,))
-            thread.start()
-            # async_result = pool.apply_async(send_mail, (attachments_name,))
-            i=0
-            attachments_name = []
-
+            if start_sending and (i >= n_min_attachments_per_mail):
+               first_now_sending = dt.now()
+               print('sending email with attachments:')
+               print(attachments_name)
+               beep(2,1)
+               thread = Thread(target=send_mail, args=(attachments_name,))
+               thread.start()
+               # async_result = pool.apply_async(send_mail, (attachments_name,))
+               i=0
+               attachments_name = []
+      except:
+         pass
 
    cam0.release()
    del (cam0);
